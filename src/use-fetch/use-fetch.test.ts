@@ -157,7 +157,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual({ message: "New data!" });
     });
 
-    it.skip("should re-fetch if request options are updated", async () => {
+    it("should re-fetch if request options are updated", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
       await waitFor(() => !result.current.loading);
       expect(result.current.data).toEqual(data);
@@ -175,7 +175,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual({ message: "New data!" });
     });
 
-    it.skip("should re-fetch if options are updated", async () => {
+    it("should re-fetch if options are updated", async () => {
       const { result } = renderHook(() =>
         useFetch<Data>(url, {}, { immediate: false }),
       );

@@ -35,11 +35,11 @@ export default function useFetch<T>(
 
   const [jsonData, setJsonData] = useState<T | null>(null);
   const [errorString, setErrorString] = useState<string | null>(null);
-  const hasBeenCalledRef = useRef(false);
-  const calledURLS = useMemo(() => new Set<string>(), []);
-  const [updatedURL, setUpdatedURL] = useState("");
+  const [url, setURL] = useState(initialUrl);
+  const [options, setOptions] = useState(initialOptions || { immediate: true });
+  const [requestOptions, setRequestOptions] = useState(initialRequestOptions);
 
-  const PreChecks = useCallback((url: string, options?: UseFetchOptions) => {
+  const PreChecks = useCallback((url: string, options: UseFetchOptions) => {
     if (options && !options.immediate)
       return false;
     if (url.length === 0) {
@@ -50,17 +50,14 @@ export default function useFetch<T>(
     return true;
   }, []);
 
-  const Fetch = useCallback(async (url: string, options?: UseFetchOptions) => {
+  const Fetch = useCallback(async (url: string, options: UseFetchOptions, requestOptions?: RequestInit) => {
     const validated = PreChecks(url, options);
     if (!validated)
       return;
-    if (calledURLS.has(url))
-      return;
-    calledURLS.add(url);
     setIsLoading(true);
     (async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, requestOptions);
         try {
           const json = await response.json();
           setJsonData(json);
@@ -83,19 +80,11 @@ export default function useFetch<T>(
     })().finally(() => {
       setIsLoading(false);
     });
-  }, [calledURLS, PreChecks]);
+  }, [PreChecks]);
 
   useEffect(() => {
-    if (!hasBeenCalledRef.current) {
-      Fetch(initialUrl, initialOptions);
-      hasBeenCalledRef.current = true;
-    }
-
-    if (updatedURL.length > 0) {
-      Fetch(updatedURL, initialOptions);
-      setUpdatedURL("");
-    }
-  }, [initialOptions, initialUrl, Fetch, PreChecks, updatedURL]);
+    Fetch(url, options, requestOptions);
+  }, [url, options, requestOptions, Fetch]);
 
   return {
     url: "",
@@ -103,9 +92,9 @@ export default function useFetch<T>(
     error: errorString,
     data: jsonData,
     load: async () => {},
-    updateUrl: setUpdatedURL,
-    updateOptions: () => {},
-    updateRequestOptions: () => {},
+    updateUrl: setURL,
+    updateOptions: setOptions,
+    updateRequestOptions: setRequestOptions,
   };
 }
 
