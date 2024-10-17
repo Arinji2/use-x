@@ -54,13 +54,16 @@ export default function useFetch<T>(
     (async () => {
       try {
         const response = await fetch(initialUrl);
-        const json = await response.json();
-        setJsonData(json);
-      }
-      catch (error) {
-        if (error instanceof Error) {
-          setErrorString(ERROR_MESSAGES.network_error);
+        try {
+          const json = await response.json();
+          setJsonData(json);
         }
+        catch {
+
+        }
+      }
+      catch {
+        setErrorString(ERROR_MESSAGES.network_error);
       }
     })().finally(() => {
       setIsLoading(false);
