@@ -37,6 +37,30 @@ export default function useFetch<T>(
   const [errorString, setErrorString] = useState<string | null>(null);
   const hasBeenCalledRef = useRef(false);
 
+  const Fetch = useCallback(async (url: string) => {
+    try {
+      const response = await fetch(url);
+      try {
+        const json = await response.json();
+        setJsonData(json);
+      }
+      catch {
+        setErrorString(ERROR_MESSAGES.json_parse);
+      }
+      if (response.status && response.status !== 200) {
+        if (isHttpErrorCode(response.status)) {
+          setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
+        }
+        else {
+          throw new Error(`HTTP ERROR NOT INDEXED. CODE: ${response.status}`);
+        }
+      }
+    }
+    catch {
+      setErrorString(ERROR_MESSAGES.network_error);
+    }
+  }, []);
+
   const PreChecks = useCallback(() => {
     if (hasBeenCalledRef.current)
       return false;
@@ -55,34 +79,13 @@ export default function useFetch<T>(
     if (!isValidated)
       return;
 
-    setIsLoading(true);
-    hasBeenCalledRef.current = true;
-    (async () => {
-      try {
-        const response = await fetch(initialUrl);
-        try {
-          const json = await response.json();
-          setJsonData(json);
-        }
-        catch {
-          setErrorString(ERROR_MESSAGES.json_parse);
-        }
-        if (response.status && response.status !== 200) {
-          if (isHttpErrorCode(response.status)) {
-            setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
-          }
-          else {
-            throw new Error(`HTTP ERROR NOT INDEXED. CODE: ${response.status}`);
-          }
-        }
-      }
-      catch {
-        setErrorString(ERROR_MESSAGES.network_error);
-      }
-    })().finally(() => {
+    Fetch(initialUrl).finally(() => {
       setIsLoading(false);
     });
-  }, [initialOptions, initialUrl, PreChecks]);
+
+    setIsLoading(true);
+    hasBeenCalledRef.current = true;
+  }, [initialOptions, initialUrl, Fetch, PreChecks]);
 
   return {
     url: "",
