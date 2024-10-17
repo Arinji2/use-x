@@ -56,7 +56,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual(data);
     });
 
-    it.skip("should not fetch on mount if immediate false", async () => {
+    it("should not fetch on mount if immediate false", async () => {
       const { result } = renderHook(() => useFetch<Data>(url, undefined, {
         immediate: false,
       }));

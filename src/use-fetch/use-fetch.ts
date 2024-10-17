@@ -24,6 +24,8 @@ export default function useFetch<T>(
   const [jsonData, setJsonData] = useState<T | null>(null);
 
   useEffect(() => {
+    if (initialOptions && !initialOptions.immediate)
+      return;
     setIsLoading(true);
     (async () => {
       const response = await fetch(initialUrl);
@@ -32,7 +34,7 @@ export default function useFetch<T>(
     })().then(() => {
       setIsLoading(false);
     });
-  }, [initialUrl]);
+  }, [initialOptions, initialUrl]);
 
   return {
     url: "",
