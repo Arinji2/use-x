@@ -236,7 +236,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual({ message: "New data 2!" });
     });
 
-    it.skip("should clear existing error if load function is called", async () => {
+    it("should clear existing error if load function is called", async () => {
       mocks.fetch.mockRejectedValue(new Error("Network Error"));
       const { result } = renderHook(() => useFetch<Data>(url));
       await waitFor(() => !result.current.loading);

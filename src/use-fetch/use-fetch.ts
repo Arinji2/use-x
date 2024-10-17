@@ -97,6 +97,7 @@ export default function useFetch<T>(
 
   const Load = useCallback(async () => {
     setJsonData(null);
+    setErrorString(null);
     await Fetch(url, options, requestOptions);
   }, [url, options, requestOptions, Fetch]);
 
