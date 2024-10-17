@@ -39,7 +39,8 @@ export default function useFetch<T>(
   const [url, setURL] = useState(initialUrl);
   const [options, setOptions] = useState(initialOptions || { immediate: true });
   const [requestOptions, setRequestOptions] = useState(initialRequestOptions);
-  const controller = useRef(new AbortController());
+  const controller = useRef<AbortController>();
+  const isFetching = useRef(false);
 
   const PreChecks = useCallback((url: string, options: UseFetchOptions) => {
     if (options && !options.immediate)
@@ -56,20 +57,33 @@ export default function useFetch<T>(
     const validated = PreChecks(url, options);
     if (!validated)
       return;
+
+    if (controller.current) {
+      controller.current.abort();
+    }
+    controller.current = new AbortController();
+
     setIsLoading(true);
-    (async () => {
-      try {
-        const response = await fetch(url, {
-          signal: controller.current.signal,
-          ...requestOptions,
-        });
+    try {
+      isFetching.current = true;
+      const response = await fetch(url, {
+        signal: controller.current.signal,
+        ...requestOptions,
+      });
+
+      if (!controller.current.signal.aborted) {
         try {
           const json = await response.json();
-          setJsonData(json);
+          if (!controller.current.signal.aborted) {
+            setJsonData(json);
+          }
         }
         catch {
-          setErrorString(ERROR_MESSAGES.json_parse);
+          if (!controller.current.signal.aborted) {
+            setErrorString(ERROR_MESSAGES.json_parse);
+          }
         }
+
         if (response.status && response.status !== 200) {
           if (isHttpErrorCode(response.status)) {
             setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
@@ -79,25 +93,32 @@ export default function useFetch<T>(
           }
         }
       }
-      catch (error) {
-        if (error instanceof Error) {
-          if (controller.current.signal.aborted || error.name === "AbortError") {
-            setJsonData(null);
-            setErrorString(null);
-          }
-          else {
-            setErrorString(ERROR_MESSAGES.network_error);
-          }
+    }
+    catch (error) {
+      if (error instanceof Error) {
+        if (controller.current?.signal.aborted || error.name === "AbortError") {
+          return;
+        }
+        else {
+          setErrorString(ERROR_MESSAGES.network_error);
         }
       }
-    })().finally(() => {
-      setIsLoading(false);
-    });
+    }
+    finally {
+      if (!controller.current?.signal.aborted) {
+        setIsLoading(false);
+        isFetching.current = false;
+      }
+    }
   }, [PreChecks]);
 
   const Load = useCallback(async () => {
     setJsonData(null);
     setErrorString(null);
+
+    if (isFetching.current && controller.current) {
+      controller.current.abort();
+    }
     await Fetch(url, options, requestOptions);
   }, [url, options, requestOptions, Fetch]);
 

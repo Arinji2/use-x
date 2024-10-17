@@ -257,7 +257,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual({ message: "New data!" });
     });
 
-    it.skip("should abort previous fetch if load is called while fetching", async () => {
+    it("should abort previous fetch if load is called while fetching", async () => {
       const fetchMocks = {
         first: {
           url: "http://abort-test.com/first",
