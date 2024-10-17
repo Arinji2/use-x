@@ -111,7 +111,7 @@ describe("useFetch", () => {
       expect(result.current.data).toBeNull();
     });
 
-    it.skip("should handle JSON parse errors correctly", async () => {
+    it("should handle JSON parse errors correctly", async () => {
       mocks.fetch.mockResolvedValue({
         ok: true,
         json: vi.fn().mockRejectedValue(new Error("Invalid JSON")),

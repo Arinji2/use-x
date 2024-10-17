@@ -18,6 +18,7 @@ export type UseFetchReturn<T> = {
 const ERROR_MESSAGES = {
   empty_url: "Empty URL",
   network_error: "Network Error",
+  json_parse: "Invalid JSON",
 };
 
 export default function useFetch<T>(
@@ -59,7 +60,7 @@ export default function useFetch<T>(
           setJsonData(json);
         }
         catch {
-
+          setErrorString(ERROR_MESSAGES.json_parse);
         }
       }
       catch {
