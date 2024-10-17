@@ -313,7 +313,7 @@ describe("useFetch", () => {
   });
 
   describe("cleanup", () => {
-    it.skip("should abort a request in progress if unmounted", async () => {
+    it("should abort a request in progress if unmounted", async () => {
       let aborted = false;
       const json = vi.fn().mockResolvedValue(data);
       mocks.fetch.mockImplementation((_url: string, options: RequestInit) => {

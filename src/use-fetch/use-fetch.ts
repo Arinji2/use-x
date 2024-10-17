@@ -124,6 +124,12 @@ export default function useFetch<T>(
 
   useEffect(() => {
     Fetch(url, options, requestOptions);
+
+    return () => {
+      if (controller.current) {
+        controller.current.abort();
+      }
+    };
   }, [url, options, requestOptions, Fetch]);
 
   return {
