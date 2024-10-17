@@ -17,6 +17,7 @@ export type UseFetchReturn<T> = {
 
 const ERROR_MESSAGES = {
   empty_url: "Empty URL",
+  network_error: "Network Error",
 };
 
 export default function useFetch<T>(
@@ -51,10 +52,17 @@ export default function useFetch<T>(
     setIsLoading(true);
     hasBeenCalledRef.current = true;
     (async () => {
-      const response = await fetch(initialUrl);
-      const json = await response.json();
-      setJsonData(json);
-    })().then(() => {
+      try {
+        const response = await fetch(initialUrl);
+        const json = await response.json();
+        setJsonData(json);
+      }
+      catch (error) {
+        if (error instanceof Error) {
+          setErrorString(ERROR_MESSAGES.network_error);
+        }
+      }
+    })().finally(() => {
       setIsLoading(false);
     });
   }, [initialOptions, initialUrl, PreChecks]);

@@ -100,7 +100,7 @@ describe("useFetch", () => {
   });
 
   describe("error Handling", () => {
-    it.skip("should handle network errors correctly", async () => {
+    it("should handle network errors correctly", async () => {
       mocks.fetch.mockRejectedValue(new Error("Network Error"));
 
       const { result } = renderHook(() => useFetch<Data>(url));
