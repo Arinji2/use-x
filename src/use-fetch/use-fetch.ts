@@ -82,6 +82,10 @@ export default function useFetch<T>(
     });
   }, [PreChecks]);
 
+  const Load = useCallback(async () => {
+    await Fetch(url, options, requestOptions);
+  }, [url, options, requestOptions, Fetch]);
+
   useEffect(() => {
     Fetch(url, options, requestOptions);
   }, [url, options, requestOptions, Fetch]);
@@ -91,7 +95,7 @@ export default function useFetch<T>(
     loading: isLoading,
     error: errorString,
     data: jsonData,
-    load: async () => {},
+    load: Load,
     updateUrl: setURL,
     updateOptions: setOptions,
     updateRequestOptions: setRequestOptions,

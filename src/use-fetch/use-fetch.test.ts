@@ -187,7 +187,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual(data);
     });
 
-    it.skip("should re-fetch if load function is called", async () => {
+    it("should re-fetch if load function is called", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
       await waitFor(() => !result.current.loading);
       expect(result.current.data).toEqual(data);
