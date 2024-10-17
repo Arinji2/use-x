@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -36,56 +36,66 @@ export default function useFetch<T>(
   const [jsonData, setJsonData] = useState<T | null>(null);
   const [errorString, setErrorString] = useState<string | null>(null);
   const hasBeenCalledRef = useRef(false);
+  const calledURLS = useMemo(() => new Set<string>(), []);
+  const [updatedURL, setUpdatedURL] = useState("");
 
-  const Fetch = useCallback(async (url: string) => {
-    try {
-      const response = await fetch(url);
-      try {
-        const json = await response.json();
-        setJsonData(json);
-      }
-      catch {
-        setErrorString(ERROR_MESSAGES.json_parse);
-      }
-      if (response.status && response.status !== 200) {
-        if (isHttpErrorCode(response.status)) {
-          setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
-        }
-        else {
-          throw new Error(`HTTP ERROR NOT INDEXED. CODE: ${response.status}`);
-        }
-      }
-    }
-    catch {
-      setErrorString(ERROR_MESSAGES.network_error);
-    }
-  }, []);
-
-  const PreChecks = useCallback(() => {
-    if (hasBeenCalledRef.current)
+  const PreChecks = useCallback((url: string, options?: UseFetchOptions) => {
+    if (options && !options.immediate)
       return false;
-    if (initialOptions && !initialOptions.immediate)
-      return false;
-    if (initialUrl.length === 0) {
+    if (url.length === 0) {
       setErrorString(ERROR_MESSAGES.empty_url);
       return false;
     }
 
     return true;
-  }, [initialOptions, initialUrl]);
+  }, []);
 
-  useEffect(() => {
-    const isValidated = PreChecks();
-    if (!isValidated)
+  const Fetch = useCallback(async (url: string, options?: UseFetchOptions) => {
+    const validated = PreChecks(url, options);
+    if (!validated)
       return;
-
-    Fetch(initialUrl).finally(() => {
+    if (calledURLS.has(url))
+      return;
+    calledURLS.add(url);
+    setIsLoading(true);
+    (async () => {
+      try {
+        const response = await fetch(url);
+        try {
+          const json = await response.json();
+          setJsonData(json);
+        }
+        catch {
+          setErrorString(ERROR_MESSAGES.json_parse);
+        }
+        if (response.status && response.status !== 200) {
+          if (isHttpErrorCode(response.status)) {
+            setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
+          }
+          else {
+            throw new Error(`HTTP ERROR NOT INDEXED. CODE: ${response.status}`);
+          }
+        }
+      }
+      catch {
+        setErrorString(ERROR_MESSAGES.network_error);
+      }
+    })().finally(() => {
       setIsLoading(false);
     });
+  }, [calledURLS, PreChecks]);
 
-    setIsLoading(true);
-    hasBeenCalledRef.current = true;
-  }, [initialOptions, initialUrl, Fetch, PreChecks]);
+  useEffect(() => {
+    if (!hasBeenCalledRef.current) {
+      Fetch(initialUrl, initialOptions);
+      hasBeenCalledRef.current = true;
+    }
+
+    if (updatedURL.length > 0) {
+      Fetch(updatedURL, initialOptions);
+      setUpdatedURL("");
+    }
+  }, [initialOptions, initialUrl, Fetch, PreChecks, updatedURL]);
 
   return {
     url: "",
@@ -93,7 +103,7 @@ export default function useFetch<T>(
     error: errorString,
     data: jsonData,
     load: async () => {},
-    updateUrl: () => {},
+    updateUrl: setUpdatedURL,
     updateOptions: () => {},
     updateRequestOptions: () => {},
   };

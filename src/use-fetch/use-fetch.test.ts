@@ -143,7 +143,7 @@ describe("useFetch", () => {
   });
 
   describe("update Functions", () => {
-    it.skip("should re-fetch if url is updated", async () => {
+    it("should re-fetch if url is updated", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
       await waitFor(() => !result.current.loading);
       expect(result.current.data).toEqual(data);
