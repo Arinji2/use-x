@@ -96,6 +96,7 @@ export default function useFetch<T>(
   }, [PreChecks]);
 
   const Load = useCallback(async () => {
+    setJsonData(null);
     await Fetch(url, options, requestOptions);
   }, [url, options, requestOptions, Fetch]);
 

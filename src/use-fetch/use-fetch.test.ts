@@ -217,7 +217,7 @@ describe("useFetch", () => {
       expect(result.current.data).toEqual(null);
     });
 
-    it.skip("should clear existing data if load function is called", async () => {
+    it("should clear existing data if load function is called", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
       await waitFor(() => !result.current.loading);
       expect(result.current.data).toEqual(data);
