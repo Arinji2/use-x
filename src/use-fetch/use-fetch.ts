@@ -1,6 +1,6 @@
 
 
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -23,13 +23,24 @@ export default function useFetch<T>(
   initialOptions?: UseFetchOptions,
 ): UseFetchReturn<T> {
 
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    fetch(initialUrl)
+    setIsLoading(true);
+    (async () => {
+       await fetch(initialUrl)
+    })().then(() => {
+    setIsLoading(false)
+    })
+   
+    
   }, [initialUrl])
-  
+
+
+
   return {
     url: "",
-    loading: false,
+    loading: isLoading,
     error: null,
     data: null,
     load: async () => {},

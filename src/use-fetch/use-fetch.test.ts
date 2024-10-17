@@ -37,7 +37,7 @@ describe("useFetch", () => {
       expect(mocks.fetch).toHaveBeenCalled();
     });
 
-    it.skip("should set loading when fetching data", async () => {
+    it("should set loading when fetching data", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
 
       expect(result.current.loading).toBe(true);
