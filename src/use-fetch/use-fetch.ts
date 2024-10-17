@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -22,11 +22,15 @@ export default function useFetch<T>(
 ): UseFetchReturn<T> {
   const [isLoading, setIsLoading] = useState(false);
   const [jsonData, setJsonData] = useState<T | null>(null);
+  const hasBeenCalledRef = useRef(false);
 
   useEffect(() => {
+    if (hasBeenCalledRef.current)
+      return;
     if (initialOptions && !initialOptions.immediate)
       return;
     setIsLoading(true);
+    hasBeenCalledRef.current = true;
     (async () => {
       const response = await fetch(initialUrl);
       const json = await response.json();

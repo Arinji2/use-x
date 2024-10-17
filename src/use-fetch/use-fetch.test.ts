@@ -65,7 +65,7 @@ describe("useFetch", () => {
       expect(mocks.fetch).not.toHaveBeenCalled();
     });
 
-    it.skip("should not re-run if new options passed in directly", () => {
+    it("should not re-run if new options passed in directly", () => {
       const initialProps = {
         url,
         requestOptions: {},
