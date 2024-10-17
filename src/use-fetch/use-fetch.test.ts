@@ -45,7 +45,7 @@ describe("useFetch", () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
     });
 
-    it.skip("should set data after fetch", async () => {
+    it("should set data after fetch", async () => {
       const { result } = renderHook(() => useFetch<Data>(url));
 
       expect(result.current.loading).toBe(true);

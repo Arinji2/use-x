@@ -21,11 +21,14 @@ export default function useFetch<T>(
   initialOptions?: UseFetchOptions,
 ): UseFetchReturn<T> {
   const [isLoading, setIsLoading] = useState(false);
+  const [jsonData, setJsonData] = useState<T | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
     (async () => {
-      await fetch(initialUrl);
+      const response = await fetch(initialUrl);
+      const json = await response.json();
+      setJsonData(json);
     })().then(() => {
       setIsLoading(false);
     });
@@ -35,7 +38,7 @@ export default function useFetch<T>(
     url: "",
     loading: isLoading,
     error: null,
-    data: null,
+    data: jsonData,
     load: async () => {},
     updateUrl: () => {},
     updateOptions: () => {},
