@@ -32,7 +32,7 @@ describe("useFetch", () => {
   });
 
   describe("initial Fetch", () => {
-    it.skip("should fetch on mount by default", async () => {
+    it("should fetch on mount by default", async () => {
       renderHook(() => useFetch<Data>(url));
       expect(mocks.fetch).toHaveBeenCalled();
     });

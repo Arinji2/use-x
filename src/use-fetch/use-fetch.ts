@@ -1,6 +1,6 @@
-// This is the file you need to update
 
-import type { Dispatch, SetStateAction } from "react";
+
+import { useEffect, type Dispatch, type SetStateAction } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -22,7 +22,11 @@ export default function useFetch<T>(
   initialRequestOptions?: RequestInit,
   initialOptions?: UseFetchOptions,
 ): UseFetchReturn<T> {
-  // your implementation here
+
+  useEffect(() => {
+    fetch(initialUrl)
+  }, [initialUrl])
+  
   return {
     url: "",
     loading: false,
