@@ -125,7 +125,7 @@ describe("useFetch", () => {
       expect(result.current.data).toBeNull();
     });
 
-    it.skip("should handle http errors correctly", async () => {
+    it("should handle http errors correctly", async () => {
       mocks.fetch.mockResolvedValue({
         ok: false,
         statusText: "Not Found",

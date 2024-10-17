@@ -19,7 +19,12 @@ const ERROR_MESSAGES = {
   empty_url: "Empty URL",
   network_error: "Network Error",
   json_parse: "Invalid JSON",
-};
+  httpErrors: {
+    404: "Not Found",
+  },
+} as const;
+
+type HttpErrorCode = keyof typeof ERROR_MESSAGES.httpErrors;
 
 export default function useFetch<T>(
   initialUrl: string,
@@ -62,6 +67,14 @@ export default function useFetch<T>(
         catch {
           setErrorString(ERROR_MESSAGES.json_parse);
         }
+        if (response.status && response.status !== 200) {
+          if (isHttpErrorCode(response.status)) {
+            setErrorString(ERROR_MESSAGES.httpErrors[response.status]);
+          }
+          else {
+            throw new Error(`HTTP ERROR NOT INDEXED. CODE: ${response.status}`);
+          }
+        }
       }
       catch {
         setErrorString(ERROR_MESSAGES.network_error);
@@ -81,4 +94,8 @@ export default function useFetch<T>(
     updateOptions: () => {},
     updateRequestOptions: () => {},
   };
+}
+
+function isHttpErrorCode(code: number): code is HttpErrorCode {
+  return code in ERROR_MESSAGES.httpErrors;
 }
