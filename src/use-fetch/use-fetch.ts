@@ -40,7 +40,6 @@ export default function useFetch<T>(
   const [options, setOptions] = useState(initialOptions || { immediate: true });
   const [requestOptions, setRequestOptions] = useState(initialRequestOptions);
   const controller = useRef<AbortController>();
-  const isFetching = useRef(false);
 
   const PreChecks = useCallback((url: string, options: UseFetchOptions) => {
     if (options && !options.immediate)
@@ -65,7 +64,6 @@ export default function useFetch<T>(
 
     setIsLoading(true);
     try {
-      isFetching.current = true;
       const response = await fetch(url, {
         signal: controller.current.signal,
         ...requestOptions,
@@ -107,7 +105,6 @@ export default function useFetch<T>(
     finally {
       if (!controller.current?.signal.aborted) {
         setIsLoading(false);
-        isFetching.current = false;
       }
     }
   }, [PreChecks]);
@@ -116,7 +113,7 @@ export default function useFetch<T>(
     setJsonData(null);
     setErrorString(null);
 
-    if (isFetching.current && controller.current) {
+    if (controller.current) {
       controller.current.abort();
     }
     await Fetch(url, options, requestOptions);
