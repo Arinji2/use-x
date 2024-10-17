@@ -203,7 +203,7 @@ describe("useFetch", () => {
   });
 
   describe("multiple requests", () => {
-    it.skip("should clear data and not set error when aborted", async () => {
+    it("should clear data and not set error when aborted", async () => {
       const abortError = new Error("Request aborted");
       abortError.name = "AbortError";
       mocks.fetch.mockRejectedValue(abortError);

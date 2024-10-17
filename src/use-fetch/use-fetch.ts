@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -19,6 +19,7 @@ const ERROR_MESSAGES = {
   empty_url: "Empty URL",
   network_error: "Network Error",
   json_parse: "Invalid JSON",
+
   httpErrors: {
     404: "Not Found",
   },
@@ -38,6 +39,7 @@ export default function useFetch<T>(
   const [url, setURL] = useState(initialUrl);
   const [options, setOptions] = useState(initialOptions || { immediate: true });
   const [requestOptions, setRequestOptions] = useState(initialRequestOptions);
+  const controller = useRef(new AbortController());
 
   const PreChecks = useCallback((url: string, options: UseFetchOptions) => {
     if (options && !options.immediate)
@@ -57,7 +59,10 @@ export default function useFetch<T>(
     setIsLoading(true);
     (async () => {
       try {
-        const response = await fetch(url, requestOptions);
+        const response = await fetch(url, {
+          signal: controller.current.signal,
+          ...requestOptions,
+        });
         try {
           const json = await response.json();
           setJsonData(json);
@@ -74,8 +79,16 @@ export default function useFetch<T>(
           }
         }
       }
-      catch {
-        setErrorString(ERROR_MESSAGES.network_error);
+      catch (error) {
+        if (error instanceof Error) {
+          if (controller.current.signal.aborted || error.name === "AbortError") {
+            setJsonData(null);
+            setErrorString(null);
+          }
+          else {
+            setErrorString(ERROR_MESSAGES.network_error);
+          }
+        }
       }
     })().finally(() => {
       setIsLoading(false);
