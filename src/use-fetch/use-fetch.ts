@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 
 export type UseFetchOptions = {
   immediate: boolean;
@@ -15,20 +15,39 @@ export type UseFetchReturn<T> = {
   updateRequestOptions: Dispatch<SetStateAction<RequestInit | undefined>>;
 };
 
+const ERROR_MESSAGES = {
+  empty_url: "Empty URL",
+};
+
 export default function useFetch<T>(
   initialUrl: string,
   initialRequestOptions?: RequestInit,
   initialOptions?: UseFetchOptions,
 ): UseFetchReturn<T> {
   const [isLoading, setIsLoading] = useState(false);
+
   const [jsonData, setJsonData] = useState<T | null>(null);
+  const [errorString, setErrorString] = useState<string | null>(null);
   const hasBeenCalledRef = useRef(false);
 
-  useEffect(() => {
+  const PreChecks = useCallback(() => {
     if (hasBeenCalledRef.current)
-      return;
+      return false;
     if (initialOptions && !initialOptions.immediate)
+      return false;
+    if (initialUrl.length === 0) {
+      setErrorString(ERROR_MESSAGES.empty_url);
+      return false;
+    }
+
+    return true;
+  }, [initialOptions, initialUrl]);
+
+  useEffect(() => {
+    const isValidated = PreChecks();
+    if (!isValidated)
       return;
+
     setIsLoading(true);
     hasBeenCalledRef.current = true;
     (async () => {
@@ -38,12 +57,12 @@ export default function useFetch<T>(
     })().then(() => {
       setIsLoading(false);
     });
-  }, [initialOptions, initialUrl]);
+  }, [initialOptions, initialUrl, PreChecks]);
 
   return {
     url: "",
     loading: isLoading,
-    error: null,
+    error: errorString,
     data: jsonData,
     load: async () => {},
     updateUrl: () => {},
